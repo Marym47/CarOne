@@ -1,10 +1,37 @@
+/*
+ * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are permitted 
+ * provided that the following conditions are met:
+ * 
+ *   * Redistributions of source code must retain the above copyright notice, this list of conditions 
+ *     and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+ *     and the following disclaimer in the documentation and/or other materials provided with the 
+ *     distribution.
+ *   * Neither the name of dyn4j nor the names of its contributors may be used to endorse or 
+ *     promote products derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.dyn4j.samples;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -71,6 +98,10 @@ public class car extends JPanel implements ActionListener {
         square.translate(new Vector2(1.5, 2.0));
         square.setMass(MassType.INFINITE);
         this.world.addBody(square);
+        //create the ship for manipulation
+        ship = new SimulationBody();
+        ship.addFixture(Geometry.createRectangle(0.5, 1.5), 1, 0.2, 0.2);
+        this.world.addBody(ship);
 
     }
     public static void main(String[] args)
@@ -82,13 +113,9 @@ public class car extends JPanel implements ActionListener {
 
         jf.setVisible(true);
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Thrust simulation = new Thrust();
+        simulation.run();
 
-        System.out.println(sum);
-        Car myCar = new Car();
-        myCar.up();
-        myCar.down();
-        myCar.left();
-        myCar.right();
     }
 
     @Override
@@ -99,29 +126,35 @@ public class car extends JPanel implements ActionListener {
     public class Car {
         private int left;
         private int right;
+        private int forward;
 
 
-        public void left(int left) {
-            this.left= left;
-            System.out.println("left");
-            return left;
+        public void left() {
+                Vector2 f1 = r.product(force * 0.1).right();
+                Vector2 f2 = r.product(force * 0.1).left();
+                Vector2 p1 = c.sum(r.product(0.9));
+                Vector2 p2 = c.sum(r.product(-0.9));
+                ship.applyForce(f1, p1);
         }
 
-        public void right(int right) {
-            this.right= right;
-            System.out.println("right");
-            return right;
+        public void right() {
+                    Vector2 f1 = r.product(force * 0.1).left();
+                    Vector2 f2 = r.product(force * 0.1).right();
+                    Vector2 p1 = c.sum(r.product(0.9));
+                    Vector2 p2 = c.sum(r.product(-0.9));
+                    ship.applyForce(f2, p2);
         }
+                public void forward(){
+                        Vector2 f = r.product(force);
+                        Vector2 p = c.sum(r.product(-0.9));
+                        ship.applyForce(f);
+
+                    }
 
     }
-//Car:
-//drive(power)
-//Power: drive power
-//turn(heading)
-//Heading: target heading
-//checkColor(distance)
-//Distance: distance to target pixel
-//Return: pixel value
+
+
+
 
 
 }
